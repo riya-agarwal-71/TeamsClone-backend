@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 mongoose.connect(
-  process.env.MONGODB_URI || "mongodb://localhost:27017/TeamsDB"
+  process.env.MONGODB_URI || "mongodb://localhost:27017/teamsdb"
 );
 
 const db = mongoose.connection;
