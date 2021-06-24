@@ -18,6 +18,4 @@ app.use(express.json());
 
 app.use("/api", require("./routes/index"));
 
-server.listen(Port, () => {
-  console.log("Server is listening on port ", Port);
-});
+server.listen(Port);
