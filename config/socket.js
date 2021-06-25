@@ -1,15 +1,19 @@
 module.exports = (server, options) => {
   const connections = {};
+  const usernames = {};
   const io = require("socket.io")(server, options);
   io.on("connection", (socket) => {
-    socket.on("join-call", (url) => {
+    socket.on("join-call", (url, username) => {
       if (connections[url] === undefined) {
         connections[url] = [];
+        usernames[url] = [];
       }
-      connections[url].push(socket.id);
+      var socketID = socket.id;
+      connections[url].push(socketID);
+      usernames[url].push(username);
 
       connections[url].forEach((id, ind, arr) => {
-        io.to(id).emit("user-joined", socket.id, arr);
+        io.to(id).emit("user-joined", socket.id, usernames[url], arr);
       });
     });
 
@@ -32,11 +36,13 @@ module.exports = (server, options) => {
       });
       let ind = connections[url].indexOf(socket.id);
       connections[url].splice(ind, 1);
+      usernames[url].splice(ind, 1);
       for (let id of connections[url]) {
         io.to(id).emit("user-left", socket.id);
       }
       if (connections[url].length <= 0) {
         delete connections[url];
+        delete usernames[url];
       }
     });
   });
