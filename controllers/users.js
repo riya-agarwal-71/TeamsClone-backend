@@ -91,7 +91,9 @@ module.exports.login = async function (req, res) {
         success: true,
         message: "Sign in Successful",
         data: {
-          token: jwt.sign({ id, name }, "BlahSomething", { expiresIn: "1h" }),
+          token: jwt.sign({ id, name, email }, "BlahSomething", {
+            expiresIn: "1h",
+          }),
           user: {
             name: user.name,
             email: user.email,
