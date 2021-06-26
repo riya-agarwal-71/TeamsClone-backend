@@ -25,6 +25,23 @@ module.exports = (server, options) => {
       io.to(toid).emit("set-description", socket.id, description);
     });
 
+    socket.on("message", (message, location, username, fromid) => {
+      // console.log(
+      //   "A new message is sent from ",
+      //   username,
+      //   "with socket id ",
+      //   fromid,
+      //   " in room ",
+      //   location,
+      //   " which says ",
+      //   message
+      // );
+      connections[location].forEach((id) => {
+        console.log("message sent to ", id);
+        io.to(id).emit("message", message, username, fromid);
+      });
+    });
+
     socket.on("disconnect", () => {
       let url;
       Object.entries(connections).forEach(([key, val]) => {
