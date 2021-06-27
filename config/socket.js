@@ -26,18 +26,7 @@ module.exports = (server, options) => {
     });
 
     socket.on("message", (message, location, username, fromid) => {
-      // console.log(
-      //   "A new message is sent from ",
-      //   username,
-      //   "with socket id ",
-      //   fromid,
-      //   " in room ",
-      //   location,
-      //   " which says ",
-      //   message
-      // );
       connections[location].forEach((id) => {
-        console.log("message sent to ", id);
         io.to(id).emit("message", message, username, fromid);
       });
     });
