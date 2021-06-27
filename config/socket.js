@@ -1,4 +1,5 @@
 module.exports = (server, options) => {
+  const utils = require("../helper/utils");
   const connections = {};
   const usernames = {};
   const io = require("socket.io")(server, options);
@@ -47,6 +48,9 @@ module.exports = (server, options) => {
         io.to(id).emit("user-left", socket.id);
       }
       if (connections[url].length <= 0) {
+        let code = url.split("/");
+        code = code[code.length - 1];
+        utils.deleteRoomID(code);
         delete connections[url];
         delete usernames[url];
       }
