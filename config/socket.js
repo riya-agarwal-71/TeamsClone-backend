@@ -18,6 +18,18 @@ module.exports = (server, options) => {
       });
     });
 
+    socket.on("screen-share", (url) => {
+      connections[url].forEach((id) => {
+        io.to(id).emit("screen-share", socket.id);
+      });
+    });
+
+    socket.on("end-screen-share", (url) => {
+      connections[url].forEach((id) => {
+        io.to(id).emit("end-screen-share");
+      });
+    });
+
     socket.on("add-ice", (toid, candidate) => {
       io.to(toid).emit("add-ice", socket.id, candidate);
     });
