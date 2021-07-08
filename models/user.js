@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    groups: [{ type: mongoose.Schema.Types.ObjectId, ref: "Group" }],
   },
   {
     timestamps: true,

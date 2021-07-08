@@ -36,6 +36,7 @@ module.exports.userSignUp = async function (req, res) {
       name,
       email,
       password,
+      groups: [],
     });
     if (!newUser) {
       return res.status(500).json({
