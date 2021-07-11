@@ -18,10 +18,18 @@ module.exports = (server, options) => {
       });
     });
 
+    socket.on("send-message-group", (grpID) => {
+      io.emit("message-recieved-group", grpID);
+    });
+
     socket.on("screen-share", (url) => {
       connections[url].forEach((id) => {
         io.to(id).emit("screen-share", socket.id);
       });
+    });
+
+    socket.on("add-participant-group", (email, grpID) => {
+      io.emit("participant-add-grp", email, grpID);
     });
 
     socket.on("end-screen-share", (url) => {
@@ -45,7 +53,7 @@ module.exports = (server, options) => {
     });
 
     socket.on("disconnect", () => {
-      let url;
+      let url = null;
       Object.entries(connections).forEach(([key, val]) => {
         val.forEach((id) => {
           if (id === socket.id) {
@@ -53,6 +61,9 @@ module.exports = (server, options) => {
           }
         });
       });
+      if (url === null) {
+        return;
+      }
       let ind = connections[url].indexOf(socket.id);
       connections[url].splice(ind, 1);
       usernames[url].splice(ind, 1);

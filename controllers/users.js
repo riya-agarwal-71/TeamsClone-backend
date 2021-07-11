@@ -106,3 +106,34 @@ module.exports.login = async function (req, res) {
     console.log("Error in login api", error);
   }
 };
+
+module.exports.getGroups = async function (req, response) {
+  try {
+    const { email } = req.body;
+    let user = await User.findOne({ email: email }).populate("groups", [
+      "_id",
+      "name",
+    ]);
+    if (!user) {
+      return response.status(200).json({
+        data: {
+          success: false,
+          message: "User not found",
+          data: {},
+        },
+      });
+    }
+
+    return response.status(200).json({
+      data: {
+        success: true,
+        message: "Found groups !",
+        data: {
+          groups: user.groups,
+        },
+      },
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};

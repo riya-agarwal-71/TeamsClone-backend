@@ -9,6 +9,7 @@ module.exports.create = async function (req, response) {
     if (!from) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "User not found",
           data: {},
         },
@@ -31,6 +32,7 @@ module.exports.create = async function (req, response) {
       if (!check) {
         return response.status(200).json({
           data: {
+            success: false,
             message: "Group not created as user not found",
             data: {},
           },
@@ -48,6 +50,7 @@ module.exports.create = async function (req, response) {
     if (!newGrp) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "Group could not be created. Try again later",
           data: {},
         },
@@ -69,6 +72,7 @@ module.exports.create = async function (req, response) {
     if (!check) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "error in editing the user",
           data: {},
         },
@@ -77,10 +81,12 @@ module.exports.create = async function (req, response) {
 
     return response.status(200).json({
       data: {
+        success: true,
         message: "Group created successfully",
         data: {
           participants: newGrp.participants,
           name: newGrp.name,
+          id: newGrp._id,
         },
       },
     });
@@ -96,6 +102,7 @@ module.exports.addMember = async function (req, response) {
     if (!by) {
       return response.status(200).json({
         data: {
+          succesS: false,
           message: "User not found",
           data: {},
         },
@@ -105,6 +112,7 @@ module.exports.addMember = async function (req, response) {
     if (!toAdd) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "User not found",
           data: {},
         },
@@ -117,6 +125,7 @@ module.exports.addMember = async function (req, response) {
     if (!grpToAdd) {
       return reponses.status(200).json({
         data: {
+          success: false,
           message: "Group not found",
           data: {},
         },
@@ -125,12 +134,25 @@ module.exports.addMember = async function (req, response) {
     if (grpToAdd.admin.email !== by.email) {
       return response.status(200).json({
         data: {
+          success: false,
           message:
             "You are not authorised to add a participant. Only admins can add participants",
           data: {},
         },
       });
     }
+
+    var participants = grpToAdd.participants;
+    if (participants.includes(toAdd._id)) {
+      return response.status(200).json({
+        data: {
+          success: false,
+          message: "Participant already exists in the group",
+          data: {},
+        },
+      });
+    }
+
     let { err, res } = await Group.updateOne(
       { _id: grpToAdd._id },
       { $addToSet: { participants: [toAdd._id] } }
@@ -138,6 +160,7 @@ module.exports.addMember = async function (req, response) {
     if (err) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "Error in adding participant",
           data: {},
         },
@@ -150,6 +173,7 @@ module.exports.addMember = async function (req, response) {
     if (err3) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "Error in adding participant",
           data: {},
         },
@@ -160,10 +184,12 @@ module.exports.addMember = async function (req, response) {
 
     return response.status(200).json({
       data: {
+        success: true,
         message: "Participant added successfully",
         data: {
           participants: groupNow.participants,
           name: groupNow.name,
+          id: groupNow._id,
         },
       },
     });
@@ -179,6 +205,7 @@ module.exports.removeMember = async function (req, response) {
     if (!removed) {
       return response.status(200).json({
         data: {
+          sucess: false,
           message: "User not found",
           data: {},
         },
@@ -188,6 +215,7 @@ module.exports.removeMember = async function (req, response) {
     if (!by) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "User not found",
           data: {},
         },
@@ -197,6 +225,7 @@ module.exports.removeMember = async function (req, response) {
     if (!grp) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "Group not found",
           data: {},
         },
@@ -205,6 +234,7 @@ module.exports.removeMember = async function (req, response) {
     if (grp.admin.email !== from) {
       return response.status(200).json({
         data: {
+          success: false,
           message:
             "You cannot remove a participant. Only admins can remove a participant",
           data: {},
@@ -216,6 +246,7 @@ module.exports.removeMember = async function (req, response) {
     if (!participants.includes(removed._id)) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "Participant not present",
           data: {},
         },
@@ -229,6 +260,7 @@ module.exports.removeMember = async function (req, response) {
     if (err) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "Error in removeing grp from user",
           data: {},
         },
@@ -242,6 +274,7 @@ module.exports.removeMember = async function (req, response) {
     if (err2) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "Error in deleting participant from group",
           data: {},
         },
@@ -250,10 +283,43 @@ module.exports.removeMember = async function (req, response) {
     let groupNow = await Group.findOne({ _id: grpID });
     return response.status(200).json({
       data: {
+        success: true,
         message: "Participant removed successfully",
         data: {
           participants: groupNow.participants,
           name: groupNow.name,
+          id: groupNow._id,
+        },
+      },
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+module.exports.getParticipants = async function (req, response) {
+  try {
+    const { grpID } = req.body;
+    let grp = await Group.findOne({ _id: grpID }).populate(
+      "admin participants"
+    );
+    if (!grp) {
+      return response.status(200).json({
+        data: {
+          success: false,
+          message: "Group not found",
+          data: {},
+        },
+      });
+    }
+    return response.status(200).json({
+      data: {
+        success: true,
+        message: "Participants found !",
+        data: {
+          participants: grp.participants,
+          id: grp._id,
+          admin: grp.admin,
         },
       },
     });
@@ -265,14 +331,14 @@ module.exports.removeMember = async function (req, response) {
 module.exports.getMessages = async function (req, response) {
   try {
     const { grpID } = req.body;
-    let grp = await Group.findOne({ _id: grpID }).populate("messages", [
-      "from",
-      "message",
-      "createdAt",
-    ]);
+    let grp = await Group.findOne({ _id: grpID }).populate({
+      path: "messages",
+      populate: { path: "from" },
+    });
     if (!grp) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "Group not found",
           data: {},
         },
@@ -280,9 +346,11 @@ module.exports.getMessages = async function (req, response) {
     }
     return response.status(200).json({
       data: {
+        success: true,
         message: "Messages found !",
         data: {
           messages: grp.messages,
+          id: grp._id,
         },
       },
     });
@@ -298,6 +366,7 @@ module.exports.delete = async function (req, response) {
     if (!byUser) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "User not found",
           data: {},
         },
@@ -307,6 +376,7 @@ module.exports.delete = async function (req, response) {
     if (!grp) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "Group not found",
           data: {},
         },
@@ -327,6 +397,7 @@ module.exports.delete = async function (req, response) {
     if (!check) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "Error in deleting group from User",
           data: {},
         },
@@ -339,8 +410,11 @@ module.exports.delete = async function (req, response) {
     await Group.deleteOne({ _id: grpID });
     return response.status(200).json({
       data: {
+        success: true,
         message: "Group deleted successfully",
-        data: {},
+        data: {
+          id: grpID,
+        },
       },
     });
   } catch (error) {

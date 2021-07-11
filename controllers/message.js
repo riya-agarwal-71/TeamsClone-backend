@@ -9,6 +9,7 @@ module.exports.create = async function (req, response) {
     if (!from) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "User not found",
           data: {},
         },
@@ -18,6 +19,7 @@ module.exports.create = async function (req, response) {
     if (!toGroup) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "Group not found",
           data: {},
         },
@@ -31,6 +33,7 @@ module.exports.create = async function (req, response) {
     if (!newMessage) {
       return response.status(200).json({
         data: {
+          success: false,
           messgage: "Error in creating the message try again later",
           data: {},
         },
@@ -45,6 +48,7 @@ module.exports.create = async function (req, response) {
     if (err) {
       return response.status(200).json({
         data: {
+          success: false,
           message: "Error in adding message to group",
           data: {},
         },
@@ -53,6 +57,7 @@ module.exports.create = async function (req, response) {
 
     return response.status(200).json({
       data: {
+        success: true,
         message: "Message Sent successfully",
         data: {
           form: fromUser,
