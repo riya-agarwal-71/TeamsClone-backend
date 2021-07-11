@@ -32,6 +32,10 @@ module.exports = (server, options) => {
       io.emit("participant-add-grp", email, grpID);
     });
 
+    socket.on("remove-participant-group", (to, grpID) => {
+      io.emit("remove-participant-group", to, grpID);
+    });
+
     socket.on("end-screen-share", (url) => {
       connections[url].forEach((id) => {
         io.to(id).emit("end-screen-share");
