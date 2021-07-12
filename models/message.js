@@ -1,5 +1,10 @@
+// create the message schema
 const mongoose = require("mongoose");
 
+// schema to store the messages consists of
+// from (refrence of the sender (user schema))
+// to (refrence of the destination (group schema))
+// message (the string form of the actual message)
 const messageSchema = new mongoose.Schema(
   {
     from: {

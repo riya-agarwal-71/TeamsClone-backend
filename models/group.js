@@ -1,5 +1,10 @@
+// create the group schema
 const mongoose = require("mongoose");
 
+// fileds are -
+// name (the name of the group)
+// participants (array) (refrence of the participants (user schema) of the group)
+// admin (refrence of the admin ie creator (user schema) of the group)
 const groupSchema = new mongoose.Schema(
   {
     name: {

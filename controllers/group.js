@@ -1,11 +1,14 @@
+// controller for the group api calls
 const Group = require("../models/group");
 const Message = require("../models/message");
 const User = require("../models/user");
 
+// function to create a group
 module.exports.create = async function (req, response) {
   try {
     const { name, participantsStr, fromUser } = req.body;
     let from = await User.findOne({ email: fromUser });
+    // if user not found
     if (!from) {
       return response.status(200).json({
         data: {
@@ -29,6 +32,7 @@ module.exports.create = async function (req, response) {
         check = false;
         return;
       }
+      // if a participant not found
       if (!check) {
         return response.status(200).json({
           data: {
@@ -47,6 +51,7 @@ module.exports.create = async function (req, response) {
       admin: from._id,
     });
 
+    // if new group could not be created
     if (!newGrp) {
       return response.status(200).json({
         data: {
@@ -69,6 +74,7 @@ module.exports.create = async function (req, response) {
       }
     });
 
+    // if group could not be added in the participant user scema
     if (!check) {
       return response.status(200).json({
         data: {
@@ -79,14 +85,13 @@ module.exports.create = async function (req, response) {
       });
     }
 
+    // successfull group creation
     return response.status(200).json({
       data: {
         success: true,
         message: "Group created successfully",
         data: {
-          participants: newGrp.participants,
-          name: newGrp.name,
-          id: newGrp._id,
+          grp: newGrp,
         },
       },
     });
@@ -95,10 +100,12 @@ module.exports.create = async function (req, response) {
   }
 };
 
+// function to add a member in a group
 module.exports.addMember = async function (req, response) {
   try {
     const { byUser, newUser, grpID } = req.body;
     let by = await User.findOne({ email: byUser });
+    // if user not found
     if (!by) {
       return response.status(200).json({
         data: {
@@ -109,6 +116,7 @@ module.exports.addMember = async function (req, response) {
       });
     }
     let toAdd = await User.findOne({ email: newUser });
+    // if user not found
     if (!toAdd) {
       return response.status(200).json({
         data: {
@@ -122,6 +130,7 @@ module.exports.addMember = async function (req, response) {
       "admin",
       "email"
     );
+    // if group not found
     if (!grpToAdd) {
       return reponses.status(200).json({
         data: {
@@ -131,6 +140,7 @@ module.exports.addMember = async function (req, response) {
         },
       });
     }
+    // if the person generating the add request not teh admin of the group
     if (grpToAdd.admin.email !== by.email) {
       return response.status(200).json({
         data: {
@@ -142,6 +152,7 @@ module.exports.addMember = async function (req, response) {
       });
     }
 
+    // if participant already exists in the group
     var participants = grpToAdd.participants;
     if (participants.includes(toAdd._id)) {
       return response.status(200).json({
@@ -157,6 +168,7 @@ module.exports.addMember = async function (req, response) {
       { _id: grpToAdd._id },
       { $addToSet: { participants: [toAdd._id] } }
     );
+    // if participant could not be added in the group schema
     if (err) {
       return response.status(200).json({
         data: {
@@ -170,6 +182,7 @@ module.exports.addMember = async function (req, response) {
       { email: newUser },
       { $addToSet: { groups: [grpToAdd._id] } }
     );
+    // if group could not be added in the user schema
     if (err3) {
       return response.status(200).json({
         data: {
@@ -182,6 +195,7 @@ module.exports.addMember = async function (req, response) {
 
     let groupNow = await Group.findOne({ _id: grpID });
 
+    // successfull group creation
     return response.status(200).json({
       data: {
         success: true,
@@ -198,10 +212,12 @@ module.exports.addMember = async function (req, response) {
   }
 };
 
+// function to remove memeber from the group
 module.exports.removeMember = async function (req, response) {
   try {
     const { toRemove, from, grpID } = req.body;
     let removed = await User.findOne({ email: toRemove });
+    // user not found
     if (!removed) {
       return response.status(200).json({
         data: {
@@ -212,6 +228,7 @@ module.exports.removeMember = async function (req, response) {
       });
     }
     let by = await User.findOne({ email: from });
+    // user not found
     if (!by) {
       return response.status(200).json({
         data: {
@@ -222,6 +239,7 @@ module.exports.removeMember = async function (req, response) {
       });
     }
     let grp = await Group.findOne({ _id: grpID }).populate("admin", "email");
+    // if group not found
     if (!grp) {
       return response.status(200).json({
         data: {
@@ -231,6 +249,7 @@ module.exports.removeMember = async function (req, response) {
         },
       });
     }
+    // if the person removing the participant is not the admin of the group
     if (grp.admin.email !== from) {
       return response.status(200).json({
         data: {
@@ -242,6 +261,7 @@ module.exports.removeMember = async function (req, response) {
       });
     }
 
+    // if participant is not present in the group
     var participants = grp.participants;
     if (!participants.includes(removed._id)) {
       return response.status(200).json({
@@ -257,11 +277,12 @@ module.exports.removeMember = async function (req, response) {
       { _id: removed._id },
       { $pullAll: { groups: [grpID] } }
     );
+    // if group could not be deleted from the user schema
     if (err) {
       return response.status(200).json({
         data: {
           success: false,
-          message: "Error in removeing grp from user",
+          message: "Error in removing grp from user",
           data: {},
         },
       });
@@ -271,6 +292,7 @@ module.exports.removeMember = async function (req, response) {
       { _id: grpID },
       { $pullAll: { participants: [removed._id] } }
     );
+    // if user could not be deleted from the group schema
     if (err2) {
       return response.status(200).json({
         data: {
@@ -280,6 +302,7 @@ module.exports.removeMember = async function (req, response) {
         },
       });
     }
+    // successfully removed the member from the group
     let groupNow = await Group.findOne({ _id: grpID });
     return response.status(200).json({
       data: {
@@ -297,12 +320,20 @@ module.exports.removeMember = async function (req, response) {
   }
 };
 
+// function to get all the participants from the group
 module.exports.getParticipants = async function (req, response) {
   try {
     const { grpID } = req.body;
-    let grp = await Group.findOne({ _id: grpID }).populate(
-      "admin participants"
-    );
+    let grp = await Group.findOne({ _id: grpID })
+      .populate({
+        path: "admin",
+        select: ["name", "email"],
+      })
+      .populate({
+        path: "participants",
+        select: ["name", "email"],
+      });
+    // group not found
     if (!grp) {
       return response.status(200).json({
         data: {
@@ -312,6 +343,7 @@ module.exports.getParticipants = async function (req, response) {
         },
       });
     }
+    // participants found successfully
     return response.status(200).json({
       data: {
         success: true,
@@ -328,13 +360,15 @@ module.exports.getParticipants = async function (req, response) {
   }
 };
 
+// function to get the messages in a group
 module.exports.getMessages = async function (req, response) {
   try {
     const { grpID } = req.body;
     let grp = await Group.findOne({ _id: grpID }).populate({
       path: "messages",
-      populate: { path: "from" },
+      populate: { path: "from", select: ["email", "name"] },
     });
+    // group not found
     if (!grp) {
       return response.status(200).json({
         data: {
@@ -344,6 +378,7 @@ module.exports.getMessages = async function (req, response) {
         },
       });
     }
+    // messages found successfully
     return response.status(200).json({
       data: {
         success: true,
@@ -359,10 +394,12 @@ module.exports.getMessages = async function (req, response) {
   }
 };
 
+// function to delete the group
 module.exports.delete = async function (req, response) {
   try {
     const { grpID, by } = req.body;
     let byUser = await User.findOne({ email: by });
+    // if user not found
     if (!byUser) {
       return response.status(200).json({
         data: {
@@ -373,6 +410,7 @@ module.exports.delete = async function (req, response) {
       });
     }
     let grp = await Group.findOne({ _id: grpID });
+    // if group not found
     if (!grp) {
       return response.status(200).json({
         data: {
@@ -394,6 +432,7 @@ module.exports.delete = async function (req, response) {
         return;
       }
     });
+    // if group could not be removed from teh user schema
     if (!check) {
       return response.status(200).json({
         data: {
@@ -404,10 +443,13 @@ module.exports.delete = async function (req, response) {
       });
     }
     let msgs = grp.messages;
+    // delete all the messages from the group
     msgs.forEach(async (m) => {
       await Message.deleteOne({ _id: m });
     });
+    // delete the group
     await Group.deleteOne({ _id: grpID });
+    // group deleted successfully
     return response.status(200).json({
       data: {
         success: true,

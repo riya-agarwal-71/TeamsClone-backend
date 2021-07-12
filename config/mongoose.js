@@ -1,3 +1,4 @@
+// connect to mongodb - teamsdb
 const mongoose = require("mongoose");
 
 mongoose.connect(

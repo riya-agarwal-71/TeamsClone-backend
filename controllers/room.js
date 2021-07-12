@@ -1,8 +1,11 @@
+// controller for the room api calls
 const Room = require("../models/room");
 
+// function to create a room
 module.exports.create = async function (req, res) {
   try {
     const { roomUrl } = req.body;
+    // if room url is null or empty string
     if (!roomUrl || roomUrl === "") {
       return res.status(200).json({
         data: {
@@ -13,6 +16,7 @@ module.exports.create = async function (req, res) {
       });
     }
     let room = await Room.findOne({ url: roomUrl });
+    // if room already exists
     if (room) {
       return res.status(200).json({
         data: {
@@ -25,6 +29,7 @@ module.exports.create = async function (req, res) {
     let newRoom = await Room.create({
       url: roomUrl,
     });
+    // fi room could not be created
     if (!newRoom) {
       return res.status(500).json({
         data: {
@@ -34,6 +39,7 @@ module.exports.create = async function (req, res) {
         },
       });
     }
+    // room created successfully
     return res.status(200).json({
       data: {
         success: true,
@@ -48,9 +54,11 @@ module.exports.create = async function (req, res) {
   }
 };
 
+// function to check if the room already exists
 module.exports.check = async function (req, res) {
   try {
     const { roomUrl } = req.body;
+    // if room url is null or empty string
     if (!roomUrl || roomUrl === "") {
       return res.status(200).json({
         data: {
@@ -61,6 +69,7 @@ module.exports.check = async function (req, res) {
       });
     }
     let room = await Room.findOne({ url: roomUrl });
+    // if room not found
     if (!room) {
       return res.status(200).json({
         data: {
@@ -70,6 +79,7 @@ module.exports.check = async function (req, res) {
         },
       });
     }
+    // if room found
     return res.status(200).json({
       data: {
         success: true,
