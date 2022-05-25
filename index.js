@@ -20,7 +20,7 @@ const io = require("./config/socket")(server, {
 // use encoded url
 app.use(express.urlencoded({ extended: true }));
 // use cors for cross origin requests
-//app.use(cors());
+app.use(cors());
 // use json
 app.use(express.json());
 
