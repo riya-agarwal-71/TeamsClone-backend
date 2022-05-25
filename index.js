@@ -8,6 +8,10 @@ const db = require("./config/mongoose");
 
 // use express server
 app = express();
+app.use((req, res, next) => {
+  res.header({ "Access-Control-Allow-Origin": "*" });
+  next();
+});
 const server = require("http").createServer(app);
 // get the socket connection (configure socket)
 const io = require("./config/socket")(server, {
@@ -20,10 +24,6 @@ const io = require("./config/socket")(server, {
 // use encoded url
 app.use(express.urlencoded({ extended: true }));
 // use cors for cross origin requests
-app.use((req, res, next) => {
-  res.header({ "Access-Control-Allow-Origin": "*" });
-  next();
-});
 // app.use(cors());
 // use json
 app.use(express.json());
